@@ -20,4 +20,4 @@ How to install?
 2) Open Blender go to Edit->Preferences->Install->Locate the downloaded addon.
 3) The add on will be installed and you can access from editor the LiveLink Tab.
 
-![](name-of-giphy.gif)
+![](BlenderUnrealLiveLink.gif)
