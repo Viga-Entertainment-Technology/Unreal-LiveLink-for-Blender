@@ -14,12 +14,13 @@ Features:
 
 multiple subjects present in your blender viewport.
 
+![Alt text](https://github.com/Viga-Entertainment-Technology/Unreal-LiveLink-for-Blender/blob/main/Screenshots/BlenderUnrealLiveLink.gif)
+
 How to install?
 
-1) Download the given addon file.
-2) Open Blender go to Edit->Preferences->Install->Locate the downloaded addon.
+1) Download the given addon file "BlenderLiveLinkAddon.py".
+2) Open Blender go to Edit->Preferences->Add-Ons. Click on the install button and locate the downloaded addon.
+3) Search for “LiveLink” in the add-ons section and tick the checkbox to enable the plugin.
 3) The add on will be installed and you can access from editor the LiveLink Tab.
 
-
-
-![Alt text](https://github.com/Viga-Entertainment-Technology/Unreal-LiveLink-for-Blender/blob/main/Screenshots/BlenderUnrealLiveLink.gif)
+For more instructions and the setup in unreal engine, refer to the instructions given [here](https://vigaet-my.sharepoint.com/:w:/p/shreyas/Eab3ieXYF_JDvMs_51-H3osByFEwrzTcrqj8wMJMO95DOA).
