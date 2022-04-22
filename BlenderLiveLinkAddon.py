@@ -52,7 +52,14 @@ def removeSub(self,context):
        sub.remove(a)
        sub_names.remove(temp)
        names.remove(temp)
-    
+
+def MessageBox(message = "", title = "Message Box", icon = 'INFO'):
+
+    def draw(self, context):
+        self.layout.label(text=message)
+
+    bpy.context.window_manager.popup_menu(draw, title = title, icon = icon)
+        
 class AddSubjects(bpy.types.Operator):
     """Tooltip"""
     bl_idname = "object.subjects_register"
@@ -107,7 +114,8 @@ class MyProperties(bpy.types.PropertyGroup):
         items=returnSub,
         default=None
     )   
-    
+
+GetIcon="RADIOBUT_OFF"    
 class BlenderUELiveLink(bpy.types.Panel):
     #bl_parent_id = "BlenderUE LiveLink"
     bl_idname = ""
@@ -118,6 +126,7 @@ class BlenderUELiveLink(bpy.types.Panel):
     bl_options = {"DEFAULT_CLOSED"}
 
     def draw(self, context):
+        global GetIcon
         layout = self.layout
         scene = context.scene
         mytool  = scene.my_tool
@@ -133,13 +142,36 @@ class BlenderUELiveLink(bpy.types.Panel):
         layout.prop(mytool,"my_enum2")
         layout.prop(mytool,"my_string")
         row=layout.row()
-        row.operator(AddSubjects.bl_idname, text="Add subjects")
+        box=row.box()
+        box.operator(AddSubjects.bl_idname, text="Add subjects",icon='ADD')
+        #row=layout.row()
+        box1=row.box()
+        box1.operator(RemoveSubjects.bl_idname, text="Remove subject",icon='REMOVE')      
         row=layout.row()
-        row.operator(RemoveSubjects.bl_idname, text="Remove subject")      
+        box2=row.box()
+        box2.operator("wm.modal_timer_operator", text="Start Live Link",icon=GetIcon)
         row=layout.row()
-        row.operator("wm.modal_timer_operator", text="Start Live Link")
+        box3=row.box()
+        box3.operator(StopLiveLink.bl_idname, text="Stop Live Link",icon='X')
         # row=layout.row()
         # row.prop(context.scene, prop_name)
+
+
+cancel=False
+
+class StopLiveLink(bpy.types.Operator):
+    bl_idname = "object.stop_livelink"
+    bl_label = "Stop LiveLink"
+    bl_options = {"UNDO"}
+    @classmethod
+    def poll(cls, context):
+        return context.active_object is not None
+
+    def execute(self, context):
+        global cancel
+        cancel=True
+        return{'FINISHED'}
+    
 
 message1=""
 class ModalTimerOperator(bpy.types.Operator):
@@ -155,21 +187,31 @@ class ModalTimerOperator(bpy.types.Operator):
     
     def modal(self, context, event):
         mytool = context.scene.my_tool
-        if event.type in {'RIGHTMOUSE', 'ESC'}:
+        global GetIcon
+        global cancel
+        if cancel and mytool.my_string!="":
+            GetIcon="RADIOBUT_OFF"
             self.cancel(context)
-            sub.clear()
-            sub_names.clear()
-            names.clear()
+            cancel=False
             return {'CANCELLED'}
+        
         if event.type == 'TIMER':
             #bpy.data.objects["Cube"] 
             global message1
-            if(mytool.my_enum=="O"):
+            if(mytool.my_enum=="O" and mytool.my_string!=""):
                 message1 = mytool.my_enum + "_"+mytool.my_string+"="
                 message1+="(" + str(bpy.data.objects[mytool.my_string].location.x) + "," + str(bpy.data.objects[mytool.my_string].location.y) +  "," + str(bpy.data.objects[mytool.my_string].location.z) +  "," + str(bpy.data.objects[mytool.my_string].rotation_quaternion.x) +  "," + str(bpy.data.objects[mytool.my_string].rotation_quaternion.y )+  "," + str(bpy.data.objects[mytool.my_string].rotation_quaternion.z) + "," + str(bpy.data.objects[mytool.my_string].rotation_quaternion.w)+ ")" + "||"
-                            
-            elif(mytool.my_enum=="A" and mytool.my_enum2=="BC"):
+                GetIcon="RADIOBUT_ON"
+                
+            elif(mytool.my_enum=="O" and mytool.my_string==""):
+                MessageBox("No subject selected","Subjects")
+                GetIcon="RADIOBUT_OFF"
+                self.cancel(context)
+                return {'CANCELLED'}
+                             
+            elif(mytool.my_enum=="A" and mytool.my_enum2=="BC" and mytool.my_string!=""):
                 count = 0
+                GetIcon="RADIOBUT_ON"
                 message1 = mytool.my_enum + "_"+mytool.my_string+"="
                 for i in bpy.data.objects[mytool.my_string].pose.bones:
                     #if(count < 3):
@@ -189,7 +231,14 @@ class ModalTimerOperator(bpy.types.Operator):
                     message1+=split_name + ":(" + "{:.9f}".format(locationWS.x)+ "," + "{:.9f}".format(locationWS.y) +  "," + "{:.9f}".format(locationWS.z) +  "," + "{:.9f}".format(-quaternionWS.x) +  "," + "{:.9f}".format(quaternionWS.y)+  "," + "{:.9f}".format(-quaternionWS.z)+ "," + "{:.9f}".format(quaternionWS.w)+ ")" + "|"
                 message1 = message1 + "|"
             
-            elif(mytool.my_enum=="A" and mytool.my_enum2=="AN"):
+            elif(mytool.my_enum=="A" and mytool.my_enum2=="BC" and mytool.my_string==""):
+                MessageBox("No subject selected","Subjects")
+                GetIcon="RADIOBUT_OFF"
+                self.cancel(context)
+                return {'CANCELLED'}
+                
+            elif(mytool.my_enum=="A" and mytool.my_enum2=="AN" and mytool.my_string!=""):
+               GetIcon="RADIOBUT_ON"
                for j in names:
                   message1+=mytool.my_enum + "_"+j+"="
                   for i in bpy.data.objects[j].pose.bones:
@@ -202,14 +251,17 @@ class ModalTimerOperator(bpy.types.Operator):
                       split_name=bone_name.split(":")[-1]
                       message1+=split_name + ":(" + "{:.9f}".format(locationWS.x)+ "," + "{:.9f}".format(locationWS.y) +  "," + "{:.9f}".format(locationWS.z) +  "," + "{:.9f}".format(-quaternionWS.x) +  "," + "{:.9f}".format(quaternionWS.y)+  "," + "{:.9f}".format(-quaternionWS.z)+ "," + "{:.9f}".format(quaternionWS.w)+ ")" + "|"
                   message1 = message1 + "|"
+                  
+            elif(mytool.my_enum=="A" and mytool.my_enum2=="AN" and mytool.my_string==""):
+                MessageBox("No subject selected","Subjects")
+                GetIcon="RADIOBUT_OFF"
+                self.cancel(context)
+                return {'CANCELLED'}
+                      
             message=message1
-            print(message)   
+                  
             self.UDPSock.sendto(message.encode(), self.addr)
             message1=""
-            # change theme color, silly!
-            color = context.preferences.themes[0].view_3d.space.gradients.high_gradient
-            color.s = 1.0
-            color.h += 0.01
             
         return {'PASS_THROUGH'}
 
@@ -225,7 +277,7 @@ class ModalTimerOperator(bpy.types.Operator):
 
 
 
-classes = [AddSubjects,RemoveSubjects,MyProperties,BlenderUELiveLink,ModalTimerOperator]
+classes = [AddSubjects,RemoveSubjects,MyProperties,BlenderUELiveLink,ModalTimerOperator,StopLiveLink]
 def register():
     for cls in classes:
         bpy.utils.register_class(cls)
