@@ -24,3 +24,14 @@ How to install?
 3) The add on will be installed and you can access from editor the LiveLink Tab.
 
 For more instructions and the setup in unreal engine, refer to the instructions given [here](https://vigaet-my.sharepoint.com/:w:/p/shreyas/Eab3ieXYF_JDvMs_51-H3osByFEwrzTcrqj8wMJMO95DOA).
+
+Update Note:
+1) Updated UI.
+2) Viewport color will no longer change.
+3) Subjects will remain registered until you remove those subjects from the list.
+5) Stop live link button has been added.
+
+
+Bug Fixed:
+1) Key error due to subject not being found has been fixed.
+2) Live link will no longer stop when you press ESC key or click right mouse button.
